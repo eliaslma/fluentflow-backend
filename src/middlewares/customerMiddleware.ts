@@ -4,19 +4,16 @@ import { z, ZodError } from "zod";
 class CustomerMiddleware {
 
     create(req: Request, res: Response, next: NextFunction) {
-        const { name, email, phone_number, password } = req.body;
+        const { name, email, password } = req.body;
 
         const schema = z.object({
             name: z.string().refine(value => /^[A-Za-z\s]+$/.test(value)),
             email: z.string().email({ message: 'Formato de e-mail inválido.' }),
-            password: z.string().min(8, { message: 'A senha deve ter pelo menos 8 caracteres.' }),
-            phone_number: z.string().refine(value => /^\d{11}$/.test(value), {
-                message: 'Número de telefone inválido. Deve conter exatamente 11 dígitos.'
-            }),
+            password: z.string().min(8, { message: 'A senha deve ter pelo menos 8 caracteres.' })
         });
 
         try {
-            schema.parse({ name, email, phone_number, password });
+            schema.parse({ name, email, password });
             next();
         } catch (error) {
 
