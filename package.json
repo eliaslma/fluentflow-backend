@@ -1,7 +1,7 @@
 {
-    "name": "barbersapp-api",
+    "name": "fluentflow-api",
     "version": "1.0.0",
-    "description": "API BarbersApp",
+    "description": "API fluentflow",
     "main": "server.ts",
     "scripts": {
       "start": "node server.ts",
