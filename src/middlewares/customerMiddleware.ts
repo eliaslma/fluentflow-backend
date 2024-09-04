@@ -26,8 +26,24 @@ class CustomerMiddleware {
         }
     }
 
-    auth(req: Request, rest: Response, next: NextFunction) {
+    auth(req: Request, res: Response, next: NextFunction) {
+        const { email, password } = req.body;
 
+        const schema = z.object({
+            email: z.string().email({ message: 'Formato de e-mail inválido.' }),
+            password: z.string().min(8, { message: 'A senha deve ter pelo menos 8 caracteres.' }),
+        });
+
+        try {
+            schema.parse({ email, password });
+            next();
+        } catch (error) {
+
+            if (error instanceof ZodError) {
+                return res.status(400).json({ error: error.errors });
+            }
+            return res.status(500).json({ error: "ERR_INTERNAL_SERVER" });
+        }
     }
 
 }
