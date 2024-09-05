@@ -8,15 +8,24 @@ Run fast:
 
 Test endpoints: 
 
+Create Account: 
 POST - http://localhost:3001/v1/customers/create/
 
 JSON test
-
 {
 "name": "",
 "email": "",
 "password": ""
 }
 
-View db:
+Auth:
+
+POST - http://localhost:3001/v1/customers/auth/
+
+{
+"email": "",
+"password": ""
+}
+
+View db in browser:
 npx prisma studio
