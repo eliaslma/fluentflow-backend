@@ -13,7 +13,7 @@ class AuthError extends Error {
 
 const ERROR_MESSAGES = {
     USER_NOT_FOUND: 'Usuário não encontrado.',
-    INCORRECT_PASSWORD: 'Senha incorreta.',
+    INCORRECT_DATA: 'E-mail ou senha incorretos',
     INTERNAL_SERVER_ERROR: 'Erro interno do servidor.',
     AUTHENTICATION_ERROR: 'Erro ao realizar a autenticação.',
     EMAIL_ALREADY_EXISTS: 'Já existe um usuário com este e-mail.',
@@ -70,7 +70,7 @@ class CustomerController {
             const passwordMatch = await compare(password, user.password)
 
             if (!passwordMatch) {
-                throw new AuthError(ERROR_MESSAGES.INCORRECT_PASSWORD);
+                throw new AuthError(ERROR_MESSAGES.INCORRECT_DATA);
             }
 
             const token = sign({}, "edf6f48a8cb5d68abd2df62e02c72b82", { subject: user.id, expiresIn: "365d" })
