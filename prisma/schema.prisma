@@ -15,11 +15,58 @@ datasource db {
 }
 
 model Customers {
-    id         String   @id @default(uuid())
-    name       String
-    email      String   @unique
-    password   String
-    created_at DateTime @default(now())
+    id            String      @id @default(uuid())
+    name          String
+    email         String      @unique
+    password      String
+    created_at    DateTime    @default(now())
+    word_in_study WordStudy[]
 
     @@map("customers")
+}
+
+model Words {
+    id                 Int           @id @default(autoincrement())
+    word               String        @unique
+    translation        String
+    word_category      WordCategory? @relation(fields: [word_category_id], references: [id])
+    word_category_id   Int?
+    study              WordStudy[]
+    english_example    String?
+    portuguese_example String?
+    portuguese_context String?
+
+    @@map("words")
+}
+
+model WordCategory {
+    id          Int     @id @default(autoincrement())
+    description String
+    list        Words[]
+    total_words Int
+
+    @@map("word_category")
+}
+
+enum WordStudyStatus {
+    NEW
+    STUDYING
+    LEARNED
+}
+
+model WordStudy {
+    id                   Int        @id @default(autoincrement())
+    words                Words?     @relation(fields: [words_id], references: [id])
+    words_id             Int?
+    customer             Customers? @relation(fields: [customer_id], references: [id])
+    customer_id          String?
+    repetitions          Int        @default(0)
+    previous_interval    Int        @default(0)
+    previous_ease_factor Float      @default(2.5)
+    review_date          DateTime?
+
+    status WordStudyStatus @default(NEW)
+
+    @@unique([words_id, customer_id])
+    @@map("wordstudy")
 }
