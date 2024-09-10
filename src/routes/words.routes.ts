@@ -30,5 +30,6 @@ const upload = multer({ storage: storage });
 
 wordsRoutes.post("/createcategory", wordsMiddleware.create, wordsController.createCategory);
 wordsRoutes.post("/upload", upload.single('file'), wordsController.uploadWords);
+wordsRoutes.get("/getwordcategories", wordsController.getCategories)
 
 export { wordsRoutes };
