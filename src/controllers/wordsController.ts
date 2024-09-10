@@ -4,6 +4,10 @@ import { prismaClient } from "../database/prismaClient";
 import { createReadStream, unlinkSync } from 'fs';
 import csv from 'csv-parser';
 
+interface WordStudyMap {
+    [words_id: string]: string;
+}
+
 class WordsController {
 
     async createCategory(req: Request, res: Response) {
@@ -78,6 +82,49 @@ class WordsController {
         } catch (error) {
             return res.status(500).json({ error: 'Erro Interno do Servidor' });
         }
+    }
+
+    async getWordsFromCategory(req: Request, res: Response) {
+
+        const { customer_id, word_category_id, take, skip } = req.body;
+
+        const lte = take + skip;
+
+        const wordListResults = await prismaClient.words.findMany({
+            where: {
+                word_category_id: word_category_id
+            },
+            select: {
+                id: true,
+                word: true
+            },
+            take: take,
+            skip: skip,
+        })
+
+        const wordStudyResults = await prismaClient.wordStudy.findMany({
+            where: {
+                customer_id: customer_id,
+                words_id: {
+                    gte: Number(skip),
+                    lte: lte
+                },
+            }
+        });
+
+        const wordStudyMap = wordStudyResults.reduce<WordStudyMap>((acc, curr) => {
+            if (curr.words_id !== null) {
+                acc[curr.words_id] = curr.status;
+            }
+            return acc;
+        }, {});
+
+        const wordListWithStatus = wordListResults.map(word => {
+            const status = wordStudyMap[word.id];
+            return { ...word, status };
+        });
+
+        return res.status(200).json(wordListWithStatus);
     }
 
 }
