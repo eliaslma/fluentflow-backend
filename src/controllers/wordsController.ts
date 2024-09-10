@@ -8,6 +8,12 @@ interface WordStudyMap {
     [words_id: string]: string;
 }
 
+type WordData = {
+    word_id: number;
+    user_id: number;
+    status: "NEW" | "LEARNED" | "STUDYING"
+};
+
 class WordsController {
 
     async createCategory(req: Request, res: Response) {
@@ -96,7 +102,7 @@ class WordsController {
             },
             select: {
                 id: true,
-                word: true
+                word: true,
             },
             take: take,
             skip: skip,
@@ -106,7 +112,7 @@ class WordsController {
             where: {
                 customer_id: customer_id,
                 words_id: {
-                    gte: Number(skip),
+                    gte: skip,
                     lte: lte
                 },
             }
@@ -125,6 +131,25 @@ class WordsController {
         });
 
         return res.status(200).json(wordListWithStatus);
+    }
+
+    async saveWordsToLearn(req: Request, res: Response) {
+
+        const { customer_id, words, status } = req.body;
+
+        try {
+            await prismaClient.wordStudy.createMany({
+                data: words.map(word => ({
+                    customer_id: customer_id,
+                    words_id: word.id,
+                    status: status
+                }))
+            });
+            return res.status(200).json({ message: 'Palavra salva com sucesso!' });
+        } catch (e) {
+            return res.status(500).json({ error: 'Erro Interno do Servidor' });
+        }
+
     }
 
 }
