@@ -35,5 +35,8 @@ wordsRoutes.post("/getwords", wordsMiddleware.getWordsFromCategory, wordsControl
 wordsRoutes.post("/savewords", wordsController.saveWordsToLearn);
 wordsRoutes.post("/getnew", wordsController.getNewWords);
 wordsRoutes.post("/setwordreview", wordsController.setWordToReview);
+wordsRoutes.post("/getwordsreview", wordsController.getWordToReview);
+wordsRoutes.post("/setdatareview", wordsController.setDataReview);
+wordsRoutes.post("/getlearned", wordsController.getLearnedWords);
 
 export { wordsRoutes };
