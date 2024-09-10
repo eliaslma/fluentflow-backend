@@ -68,7 +68,16 @@ class WordsController {
                     return res.status(400).json({ error: 'Erro ao importar palavra do arquivo CSV' });
                 });
         }
+    }
 
+    async getCategories(req: Request, res: Response){
+        try {
+            const categories = await prismaClient.wordCategory.findMany();
+            return res.status(200).json({ categories });
+
+        } catch (error) {
+            return res.status(500).json({ error: 'Erro Interno do Servidor' });
+        }
     }
 
 }
