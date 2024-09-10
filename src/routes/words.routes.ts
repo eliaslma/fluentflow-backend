@@ -33,5 +33,7 @@ wordsRoutes.post("/upload", upload.single('file'), wordsController.uploadWords);
 wordsRoutes.get("/getwordcategories", wordsController.getCategories)
 wordsRoutes.post("/getwords", wordsMiddleware.getWordsFromCategory, wordsController.getWordsFromCategory)
 wordsRoutes.post("/savewords", wordsController.saveWordsToLearn);
+wordsRoutes.post("/getnew", wordsController.getNewWords);
+wordsRoutes.post("/setwordreview", wordsController.setWordToReview);
 
 export { wordsRoutes };

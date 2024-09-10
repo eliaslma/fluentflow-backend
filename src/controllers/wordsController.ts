@@ -152,6 +152,67 @@ class WordsController {
 
     }
 
+    async getNewWords(req: Request, res: Response) {
+
+        const { customer_id } = req.body;
+
+        try {
+            const wordsData = await prismaClient.wordStudy.findMany({
+                where: {
+                    customer_id: customer_id,
+                    status: 'NEW',
+                },
+                select: {
+                    words_id: true,
+                    words: {
+                        select: {
+                            word: true,
+                            translation: true,
+                            portuguese_context: true,
+                            english_example: true,
+                            portuguese_example: true
+                            
+                        }
+                    }
+                }
+            })
+
+            return res.status(200).json(wordsData);
+
+        } catch (e) {
+            return res.status(500).json({ error: 'Erro Interno do Servidor' });
+        }
+    }
+
+    async setWordToReview(req: Request, res: Response) {
+
+        const { customer_id, words_id } = req.body;
+        
+        try {  
+            if (customer_id && words_id) {
+                await prismaClient.wordStudy.update({
+                    where: {
+                        words_id_customer_id: {
+                            words_id: words_id,
+                            customer_id: customer_id
+                        }
+                    },
+                    data: {
+                        status: 'STUDYING',
+                        review_date: new Date()
+                    }
+                })
+
+                return res.status(200).json({ message: 'Palavra adicionada a revisao com sucesso!' });
+
+            }
+        } catch (e) {
+            console.log(e);
+            return res.status(500).json({ error: 'Erro Interno do Servidor' });
+        }
+
+    }
+
 }
 
 export default WordsController;
