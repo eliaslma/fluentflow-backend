@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import { prismaClient } from "../database/prismaClient";
 import { createReadStream, unlinkSync } from 'fs';
 import csv from 'csv-parser';
+import { addDays, setHours, setMinutes, setSeconds, setMilliseconds } from "date-fns";
 
 interface WordStudyMap {
     [words_id: string]: string;
@@ -211,6 +212,107 @@ class WordsController {
             return res.status(500).json({ error: 'Erro Interno do Servidor' });
         }
 
+    }
+
+    async getWordToReview(req: Request, res: Response) {
+        const { customer_id } = req.body;
+        try {
+            if (customer_id) {
+                const wordsToReview = await prismaClient.wordStudy.findMany({
+                    where: {
+                        customer_id: customer_id,
+                        status: 'STUDYING',
+                        review_date: {
+                            lte: new Date()
+                        }
+                    },
+                    select: {
+                        id: true,
+                        repetitions: true,
+                        previous_interval: true,
+                        previous_ease_factor: true,
+                        words: {
+                            select: {
+                                word: true,
+                                translation: true,
+                                portuguese_context: true,
+                                english_example: true,
+                                portuguese_example: true,
+                            }
+                        }
+                    }
+                });
+    
+                return res.status(200).json(wordsToReview);
+            } else {
+                return res.status(400).json({ error: 'customer_id é necessário' });
+            }
+        } catch (e) {
+            console.log(e);
+            return res.status(500).json({ error: 'Erro Interno do Servidor' });
+        }
+    }
+
+    async setDataReview (req: Request, res: Response) {
+        const { data, words_id, customer_id } = req.body;
+
+        console.log(words_id)
+
+        if(data.interval){
+
+            const now = new Date();
+            let reviewDate = addDays(now, data.interval);
+            reviewDate = setHours(setMinutes(setSeconds(setMilliseconds(reviewDate, 0), 0), 0), 6);
+
+            await prismaClient.wordStudy.update({
+                where: {
+                    id: words_id,
+                    customer_id: customer_id
+                },
+                data: {
+                    previous_interval: data.interval,
+                    previous_ease_factor: data.easeFactor,
+                    repetitions: data.repetitions,
+                    review_date: reviewDate
+                }
+            })
+
+            return res.status(200).json({ message: 'Sucesso!'});
+        }
+
+    }
+
+    async getLearnedWords(req: Request, res: Response) {
+
+        const { customer_id } = req.body;
+
+        try {
+            const learnedCount = await prismaClient.wordStudy.count({
+                where: {
+                    customer_id: customer_id,
+                    status: 'LEARNED',
+                }
+            });
+
+            const newCount = await prismaClient.wordStudy.count({
+                where: {
+                    customer_id: customer_id,
+                    status: 'NEW',
+                }
+            });
+
+            const learningCount = await prismaClient.wordStudy.count({
+                where: {
+                    customer_id: customer_id,
+                    status: 'STUDYING',
+                }
+            })
+
+            return res.status(200).json({ learnedCount, newCount, learningCount });
+
+        } catch (e) {
+            return res.status(500).json({ error: 'Erro Interno do Servidor' });
+        }
     }
 
 }
